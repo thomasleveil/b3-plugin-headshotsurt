@@ -25,57 +25,21 @@
 # 13/09/2008 - v0.2.0
 # - Refactoring
 # - Add award messages at end of game
-
-
-__version__ = '0.2.0'
+# 18/08/2012 - v1.0
+# - change default config file to .ini format (.xml format still works)
+# - support Urban Terror 4.2 new hitlocation values. See https://github.com/courgette/b3-plugin-headshotsurt/issues/1
+#
+__version__ = '1.0'
 __author__  = 'Courgette'
 
 
-import b3
-import b3.events
+from b3.plugin import Plugin
+from b3.events import EVT_CLIENT_KILL, EVT_GAME_EXIT
+from b3 import TEAM_BLUE, TEAM_RED, TEAM_UNKNOWN
 
 ### kill modes constants ###
-MOD_WATER='1'
-MOD_LAVA='3'
-MOD_TELEFRAG='5'
-MOD_FALLING='6'
-MOD_SUICIDE='7'
-MOD_TRIGGER_HURT='9'
-MOD_CHANGE_TEAM='10'
-UT_MOD_KNIFE='12'
-UT_MOD_KNIFE_THROWN='13'
-UT_MOD_BERETTA='14'
-UT_MOD_DEAGLE='15'
-UT_MOD_SPAS='16'
-UT_MOD_UMP45='17'
-UT_MOD_MP5K='18'
-UT_MOD_LR300='19'
-UT_MOD_G36='20'
-UT_MOD_PSG1='21'
-UT_MOD_HK69='22'
 UT_MOD_BLED='23'
-UT_MOD_KICKED='24'
 UT_MOD_HEGRENADE='25'
-UT_MOD_SR8='28'
-UT_MOD_AK103='30'
-UT_MOD_SPLODED='31'
-UT_MOD_SLAPPED='32'
-UT_MOD_BOMBED='33'
-UT_MOD_NUKED='34'
-UT_MOD_NEGEV='35'
-UT_MOD_HK69_HIT='37'
-UT_MOD_M4='38'
-UT_MOD_FLAG='39'
-UT_MOD_GOOMBA='40'
-
-### hit location constants ###
-HL_HEAD='0'
-HL_HELMET='1'
-HL_TORSO='2'
-HL_KEVLAR='3'
-HL_ARMS='4'
-HL_LEGS='5'
-HL_BODY='6'
 
 
 class HeadShotsStats:
@@ -83,40 +47,54 @@ class HeadShotsStats:
     kills = 0
     
 #--------------------------------------------------------------------------------------------------
-class HeadshotsurtPlugin(b3.plugin.Plugin):
+class HeadshotsurtPlugin(Plugin):
     _adminPlugin = None
-    _reset_headshots_stats = None
-    _min_level_headshots_cmd = None
+    _reset_headshots_stats = False
+    _min_level_headshots_cmd = 0
     _clientvar_name = 'headshots_info'
-    _show_awards = None
+    _show_awards = False
+
 
     
     def onLoadConfig(self):
 
         try:
-            if self.config.get('settings', 'reset_headshots') == '1':
-                self._reset_headshots_stats = True
-        except:
-            self._reset_headshots_stats = False
+            self._reset_headshots_stats = self.config.getboolean('settings', 'reset_headshots')
+        except Exception, err:
+            self.warning("Using default value %s for reset_headshots. %s" % (self._reset_headshots_stats, err))
         self.debug('reset hs stats : %s' % self._reset_headshots_stats)
             
             
         try:
-            if self.config.get('settings', 'show_awards') == '1':
-                self._show_awards = True
-        except:
-            self._show_awards = False
-        self.debug('show awards : %s' % self._show_awards)            
+            self._show_awards = self.config.getboolean('settings', 'show_awards')
+        except Exception, err:
+            self.warning("Using default value %s for show_awards. %s" % (self._show_awards, err))
+        self.debug('show awards : %s' % self._show_awards)
         
         
         try:
               self._min_level_headshots_cmd = self.config.getint('settings', 'min_level_headshots_cmd')
-        except:
-            self._min_level_headshots_cmd = 0
+        except Exception, err:
+            self.warning("Using default value %s for min_level_headshots_cmd. %s" % (self._min_level_headshots_cmd, err))
         self.debug('min level for hs cmd : %s' % self._min_level_headshots_cmd)
         
-        
-        
+
+    def onStartup(self):
+
+        ### hit location constants ###
+        if self.console.gameName.startswith('iourt41'):
+            self.HL_HEAD = '0'
+            self.HL_HELMET = '1'
+        elif self.console.gameName.startswith('iourt42'):
+            self.HL_HEAD = '1'
+            self.HL_HELMET = '4'
+        else:
+            self.critical("unsupported game : %s" % self.console.gameName)
+            raise SystemExit(220)
+
+        self.registerEvent(EVT_CLIENT_KILL)
+        self.registerEvent(EVT_GAME_EXIT)
+
         # get the plugin so we can register commands
         self._adminPlugin = self.console.getPlugin('admin')
         if not self._adminPlugin:
@@ -124,12 +102,6 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
             self.error('Could not find admin plugin')
         else:
             self._adminPlugin.registerCommand(self, 'headshots', self._min_level_headshots_cmd, self.cmd_headshots, 'hs')
-        
-        
-        
-    def onStartup(self):
-        self.registerEvent(b3.events.EVT_CLIENT_KILL)
-        self.registerEvent(b3.events.EVT_GAME_EXIT)
 
 
 
@@ -137,23 +109,25 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
         """\
         Handle intercepted events
         """
-        if event.type == b3.events.EVT_CLIENT_KILL:
+        if event.type == EVT_CLIENT_KILL:
             self.handle_kills(event)
-        elif event.type == b3.events.EVT_GAME_EXIT:
+        elif event.type == EVT_GAME_EXIT:
             self.handle_gameexit(event)
               
 
     def init_headshots_stats(self, client):
         # initialize the clients spree stats
         client.setvar(self, self._clientvar_name, HeadShotsStats())
-    
+
+
     def get_headshots_stats(self, client):
         
         if not client.isvar(self, self._clientvar_name):
             client.setvar(self, self._clientvar_name, HeadShotsStats())
             
         return client.var(self, self._clientvar_name).value
-    
+
+
     def handle_kills(self, event):
         """\
         A kill was made. 
@@ -166,33 +140,32 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
             
             stats.kills += 1
             
-            if weapon not in (UT_MOD_BLED, UT_MOD_HEGRENADE) and hitlocation == HL_HEAD or hitlocation == HL_HELMET:
+            if weapon not in (UT_MOD_BLED, UT_MOD_HEGRENADE) and self.is_headshot(hitlocation):
                 stats.headshots += 1
-                self.show_message( client )
+                self.show_message(client)
                 
-            # if stats.kills>0:
-              # self.debug("[%s] HS:%s K:%s ratio:%.2f" % (client.name, stats.headshots, stats.kills, (float(stats.headshots) / stats.kills)))
-            # else:
-              # self.debug("[%s] HS:%s K:%s" % (client.name, stats.headshots, stats.kills))
+
+    def is_headshot(self, hitlocation):
+        return hitlocation == self.HL_HEAD or hitlocation == self.HL_HELMET
+
 
     def show_message(self, client):
         """\
         display the message
         """
+        s = self.get_headshots_stats(client)
+        self.console.write('%s^3 made ^6%s^3 headshot%s' % (self.coloredClientName(client), s.headshots, 's' if s.headshots > 1 else ''))
 
-        headshotsStats = self.get_headshots_stats(client)
-        self.console.write('%s^3 made ^6%s^3 headshots'%(self.coloredClientName(client),headshotsStats.headshots))        
-    
-    
+
     def cmd_headshots(self, data, client, cmd=None):
         """\
         [player] - Show a players number of headshots
         """        
         if data is None or data=='':
             if client is not None:
-                headshotsStats = self.get_headshots_stats(client)
-                if headshotsStats.headshots > 0:
-                    cmd.sayLoudOrPM(client, '^7You made ^2%s^7 headshots' % headshotsStats.headshots)
+                s = self.get_headshots_stats(client)
+                if s.headshots > 0:
+                    cmd.sayLoudOrPM(client, '^7You made ^2%s^7 headshot%s' % (s.headshots, 's' if s.headshots > 1 else ''))
                 else:
                     cmd.sayLoudOrPM(client, '^7You made no headshot')
         else:
@@ -203,11 +176,10 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
                 if not sclient:
                     # a player matchin the name was not found, a list of closest matches will be displayed
                     # we can exit here and the user will retry with a more specific player
-                    client.message('^7Invalid data, can\t find player %s'%data)
-                    return False
+                    return
             else:
                 client.message('^7Invalid data, try !help headshots')
-                return False
+                return
             
             headshotsStats = self.get_headshots_stats(sclient)
             if headshotsStats.headshots > 0:
@@ -244,7 +216,6 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
         
             
             for c, ratio in maxHsClients:
-                
                 #self.debug("Most HS found : %s (%s)" % (c.name, maxHs))
                 self.console.say('^2Most HS Award : %s^3 (^6%s^3 HS, ratio: %.2f)'%(self.coloredClientName(c), maxHs, ratio))
 
@@ -258,10 +229,10 @@ class HeadshotsurtPlugin(b3.plugin.Plugin):
     def coloredClientName(self, client):
         # color name with team color
         clientName = client.name
-        if (client.team==b3.TEAM_RED):
-            clientName = '^1%s^7'%client.name
-        elif (client.team==b3.TEAM_BLUE):
-            clientName = '^4%s^7'%client.name
-        elif (client.team==b3.TEAM_UNKNOWN):
-            clientName = '^3%s^7'%client.name
+        if client.team == TEAM_RED:
+            clientName = '^1%s^7' % client.name
+        elif client.team == TEAM_BLUE:
+            clientName = '^4%s^7' % client.name
+        elif client.team == TEAM_UNKNOWN:
+            clientName = '^3%s^7' % client.name
         return clientName
