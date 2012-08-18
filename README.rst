@@ -1,5 +1,5 @@
-heashotsurt plugin for Big Brother Bot (www.bigbrotherbot.net)
-==============================================================
+headshotsurt plugin for Big Brother Bot
+=======================================
 
 http://www.bigbrotherbot.net
 
