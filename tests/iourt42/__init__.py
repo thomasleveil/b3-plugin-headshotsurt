@@ -8,7 +8,6 @@ import logging
 from b3 import TEAM_UNKNOWN, __version__ as b3__version__
 from b3.config import XmlConfigParser
 from b3.fake import FakeClient
-from b3.parsers.iourt42 import Iourt42Parser
 from b3.plugins.admin import AdminPlugin
 try:
     from b3.parsers.iourt42 import Iourt42Parser
