@@ -5,13 +5,20 @@ if sys.version_info[:2] < (2, 7):
 else:
     import unittest
 import logging
-from b3 import TEAM_UNKNOWN
+from b3 import TEAM_UNKNOWN, __version__ as b3__version__
 from b3.config import XmlConfigParser
 from b3.fake import FakeClient
 from b3.parsers.iourt42 import Iourt42Parser
 from b3.plugins.admin import AdminPlugin
+try:
+    from b3.parsers.iourt42 import Iourt42Parser
+except ImportError:
+    HAS_IOURT42_PARSER = False
+else:
+    HAS_IOURT42_PARSER = True
 
 
+@unittest.skipUnless(HAS_IOURT42_PARSER, "B3 %s does not have the iourt42 parser" % b3__version__)
 class Iourt42TestCase(unittest.TestCase):
     """
     Test case that is suitable for testing Iourt41 parser specific features
