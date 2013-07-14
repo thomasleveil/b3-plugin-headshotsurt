@@ -1,3 +1,7 @@
+# Eclipse pydev
 .pydevproject
 .project
 .settings/org.eclipse.core.resources.prefs
+
+# PyCharm
+.idea
