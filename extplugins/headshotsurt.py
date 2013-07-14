@@ -18,19 +18,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 #
-# Requirements : B3 v1.1.3+
-#
-# Changelog :
-# 0.0.1 : initial release
-# 13/09/2008 - v0.2.0
-# - Refactoring
-# - Add award messages at end of game
-# 18/08/2012 - v1.0
-# - change default config file to .ini format (.xml format still works)
-# - support Urban Terror 4.2 new hitlocation values. See https://github.com/courgette/b3-plugin-headshotsurt/issues/1
-# 14/07/2012 - v.1.1 (Fenix)
-# - changed hitlocaton code for HL_HELMET to support the last UrT release (4.2.013)
-#
 __version__ = '1.1'
 __author__  = 'Courgette'
 

@@ -43,6 +43,19 @@ Commands
   Tells you how many headshots kills a given player made so far
 
 
+Changelog
+---------
+
+0.2.0 - 13/09/2008
+  - Refactoring
+  - Add award messages at end of game
+
+1.0 - 18/08/2012
+  - change default config file to .ini format (.xml format still works)
+  - support Urban Terror 4.2 new hitlocation values. See https://github.com/courgette/b3-plugin-headshotsurt/issues/1
+
+1.1 - 14/07/2012 (Fenix)
+  - changed hitlocaton code for HL_HELMET to support the last UrT release (4.2.013)
 
 
 
