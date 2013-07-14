@@ -87,7 +87,7 @@ class HeadshotsurtPlugin(Plugin):
             self.HL_HELMET = '1'
         elif self.console.gameName.startswith('iourt42'):
             self.HL_HEAD = '1'
-            self.HL_HELMET = '4'
+            self.HL_HELMET = '2'
         else:
             self.critical("unsupported game : %s" % self.console.gameName)
             raise SystemExit(220)
