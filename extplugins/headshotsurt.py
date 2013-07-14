@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 #
-__version__ = '1.1'
+__version__ = '1.2'
 __author__  = 'Courgette'
 
 
@@ -26,16 +26,12 @@ from b3.plugin import Plugin
 from b3.events import EVT_CLIENT_KILL, EVT_GAME_EXIT
 from b3 import TEAM_BLUE, TEAM_RED, TEAM_UNKNOWN
 
-### kill modes constants ###
-UT_MOD_BLED='23'
-UT_MOD_HEGRENADE='25'
-
 
 class HeadShotsStats:
     headshots = 0
     kills = 0
     
-#--------------------------------------------------------------------------------------------------
+
 class HeadshotsurtPlugin(Plugin):
     _adminPlugin = None
     _reset_headshots_stats = False
@@ -43,8 +39,49 @@ class HeadshotsurtPlugin(Plugin):
     _clientvar_name = 'headshots_info'
     _show_awards = False
 
+    def __init__(self, console, config=None):
+        Plugin.__init__(self, console, config)
+        if self.console.gameName not in ('iourt41', 'iourt42'):
+            self.critical("unsupported game : %s" % self.console.gameName)
+            raise SystemExit(220)
 
-    
+        ### kill modes constants ###
+        try:
+            self.UT_MOD_BLED = self.console.UT_MOD_BLED
+        except AttributeError, err:
+            self.warning("could not get UT_MOD_BLED value from B3 parser. %s" % err)
+            self.UT_MOD_BLED = '23'
+        self.debug("UT_MOD_BLED is %s" % self.UT_MOD_BLED)
+
+        try:
+            self.UT_MOD_HEGRENADE = self.console.UT_MOD_HEGRENADE
+        except AttributeError, err:
+            self.warning("could not get UT_MOD_HEGRENADE value from B3 parser. %s" % err)
+            self.UT_MOD_HEGRENADE = '25'
+        self.debug("UT_MOD_HEGRENADE is %s" % self.UT_MOD_HEGRENADE)
+
+        ### hit location constants ###
+        try:
+            self.HL_HEAD = self.console.HL_HEAD
+        except AttributeError, err:
+            self.warning("could not get HL_HEAD value from B3 parser. %s" % err)
+            if self.console.gameName == 'iourt41':
+                self.HL_HEAD = '0'
+            elif self.console.gameName == 'iourt42':
+                self.HL_HEAD = '1'
+        self.debug("HL_HEAD is %s" % self.HL_HEAD)
+
+        try:
+            self.HL_HELMET = self.console.HL_HELMET
+        except AttributeError, err:
+            self.warning("could not get HL_HELMET value from B3 parser. %s" % err)
+            if self.console.gameName == 'iourt41':
+                self.HL_HELMET = '1'
+            elif self.console.gameName == 'iourt42':
+                self.HL_HELMET = '2'
+        self.debug("HL_HELMET is %s" % self.HL_HELMET)
+
+
     def onLoadConfig(self):
 
         try:
@@ -69,18 +106,6 @@ class HeadshotsurtPlugin(Plugin):
         
 
     def onStartup(self):
-
-        ### hit location constants ###
-        if self.console.gameName.startswith('iourt41'):
-            self.HL_HEAD = '0'
-            self.HL_HELMET = '1'
-        elif self.console.gameName.startswith('iourt42'):
-            self.HL_HEAD = '1'
-            self.HL_HELMET = '2'
-        else:
-            self.critical("unsupported game : %s" % self.console.gameName)
-            raise SystemExit(220)
-
         self.registerEvent(EVT_CLIENT_KILL)
         self.registerEvent(EVT_GAME_EXIT)
 
@@ -129,7 +154,7 @@ class HeadshotsurtPlugin(Plugin):
             
             stats.kills += 1
             
-            if weapon not in (UT_MOD_BLED, UT_MOD_HEGRENADE) and self.is_headshot(hitlocation):
+            if weapon not in (self.UT_MOD_BLED, self.UT_MOD_HEGRENADE) and self.is_headshot(hitlocation):
                 stats.headshots += 1
                 self.show_message(client)
                 

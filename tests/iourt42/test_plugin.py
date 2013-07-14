@@ -1,12 +1,16 @@
 # -*- encoding: utf-8 -*-
+import logging
 from b3.config import CfgConfigParser
 from headshotsurt import HeadshotsurtPlugin
 from tests.iourt42 import Iourt42TestCase
+
+
 
 class Test_plugin(Iourt42TestCase):
     def setUp(self):
         super(Test_plugin, self).setUp()
         self.conf = CfgConfigParser()
+        logging.getLogger('output').setLevel(logging.DEBUG)
         self.p = HeadshotsurtPlugin(self.console, self.conf)
         self.p.onStartup()
 
