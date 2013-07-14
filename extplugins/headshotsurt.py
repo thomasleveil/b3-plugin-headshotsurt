@@ -28,8 +28,10 @@
 # 18/08/2012 - v1.0
 # - change default config file to .ini format (.xml format still works)
 # - support Urban Terror 4.2 new hitlocation values. See https://github.com/courgette/b3-plugin-headshotsurt/issues/1
+# 14/07/2012 - v.1.1 (Fenix)
+# - changed hitlocaton code for HL_HELMET to support the last UrT release (4.2.013)
 #
-__version__ = '1.0'
+__version__ = '1.1'
 __author__  = 'Courgette'
 
 
@@ -73,7 +75,7 @@ class HeadshotsurtPlugin(Plugin):
         
         
         try:
-              self._min_level_headshots_cmd = self.config.getint('settings', 'min_level_headshots_cmd')
+            self._min_level_headshots_cmd = self.config.getint('settings', 'min_level_headshots_cmd')
         except Exception, err:
             self.warning("Using default value %s for min_level_headshots_cmd. %s" % (self._min_level_headshots_cmd, err))
         self.debug('min level for hs cmd : %s' % self._min_level_headshots_cmd)
@@ -87,7 +89,7 @@ class HeadshotsurtPlugin(Plugin):
             self.HL_HELMET = '1'
         elif self.console.gameName.startswith('iourt42'):
             self.HL_HEAD = '1'
-            self.HL_HELMET = '4'
+            self.HL_HELMET = '2'
         else:
             self.critical("unsupported game : %s" % self.console.gameName)
             raise SystemExit(220)
