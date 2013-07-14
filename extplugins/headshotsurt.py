@@ -73,7 +73,7 @@ class HeadshotsurtPlugin(Plugin):
         
         
         try:
-              self._min_level_headshots_cmd = self.config.getint('settings', 'min_level_headshots_cmd')
+            self._min_level_headshots_cmd = self.config.getint('settings', 'min_level_headshots_cmd')
         except Exception, err:
             self.warning("Using default value %s for min_level_headshots_cmd. %s" % (self._min_level_headshots_cmd, err))
         self.debug('min level for hs cmd : %s' % self._min_level_headshots_cmd)
