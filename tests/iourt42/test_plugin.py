@@ -14,8 +14,9 @@ class Test_plugin(Iourt42TestCase):
     def test_is_headshot(self):
         self.assertFalse(self.p.is_headshot('0'))
         self.assertTrue(self.p.is_headshot('1'))
+        self.assertTrue(self.p.is_headshot('2'))
         self.assertFalse(self.p.is_headshot('3'))
-        self.assertTrue(self.p.is_headshot('4'))
+        self.assertFalse(self.p.is_headshot('4'))
         self.assertFalse(self.p.is_headshot('5'))
         self.assertFalse(self.p.is_headshot('6'))
         self.assertFalse(self.p.is_headshot('7'))
