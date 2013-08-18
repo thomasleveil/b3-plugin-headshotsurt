@@ -13,6 +13,8 @@ from b3.config import XmlConfigParser
 from b3.fake import FakeClient
 from b3.parsers.iourt41 import Iourt41Parser
 from b3.plugins.admin import AdminPlugin
+from b3.update import B3version
+from b3 import __version__ as b3_version
 
 
 class Iourt41TestCase(unittest.TestCase):
@@ -38,8 +40,13 @@ class Iourt41TestCase(unittest.TestCase):
             self.console.startup()
 
             # load the admin plugin
-            self.adminPlugin = AdminPlugin(self.console, '@b3/conf/plugin_admin.xml')
-            self.adminPlugin.onStartup()
+            if B3version(b3_version) >= B3version("1.10dev"):
+                admin_plugin_conf_file = '@b3/conf/plugin_admin.ini'
+            else:
+                admin_plugin_conf_file = '@b3/conf/plugin_admin.xml'
+            with logging_disabled():
+                self.adminPlugin = AdminPlugin(self.console, admin_plugin_conf_file)
+                self.adminPlugin.onStartup()
 
             # make sure the admin plugin obtained by other plugins is our admin plugin
             when(self.console).getPlugin('admin').thenReturn(self.adminPlugin)
