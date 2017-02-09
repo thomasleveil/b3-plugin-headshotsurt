@@ -16,7 +16,7 @@ When a player makes a headshot (ie: a kill with last bullet in head or helmet), 
 Requirements
 ------------
 
-This plugin will only work with B3 parsers iourt41 and iourt42. Other games won't work.
+This plugin will only work with B3 parsers iourt41, iourt42 and iourt43. Other games won't work.
 
 
 
@@ -60,7 +60,8 @@ Changelog
 1.2 - 14/07/2013
   - hitlocation and weapon code values are read from the B3 parser if available
 
-
+1.3 - 9/02/2017 (Pedrxd)
+  - Added support for Urban Terror 4.3
 
 Contrib
 -------
